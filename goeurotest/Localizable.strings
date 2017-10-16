@@ -1,0 +1,21 @@
+/* 
+  Localizable.strings
+  goeurotest
+
+  Created by Andras Kadar on 2017. 10. 16..
+  Copyright © 2017. andraskadar. All rights reserved.
+*/
+
+// General
+"general.ok" = "Ok";
+"general.cancel" = "Cancel";
+
+// Offers
+"offer.notimplemented.title" = "Ooops!";
+"offer.notimplemented.message" = "Offer details are not yet implemented!";
+
+// Sort
+"sort.sortingby" = "Sorted by:";
+"sort.type.departureTime" = "departure time";
+"sort.type.arrivalTime" = "arrival time";
+"sort.type.duration" = "duration";
