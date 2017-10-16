@@ -19,3 +19,7 @@
 "sort.type.departureTime" = "departure time";
 "sort.type.arrivalTime" = "arrival time";
 "sort.type.duration" = "duration";
+
+// Direction
+"direction.connectiontype.direct" = "Direct";
+"direction.connectiontype.xstops" = "%d stops";

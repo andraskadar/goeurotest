@@ -9,6 +9,8 @@
 import Foundation
 import RxSwift
 import RxOptional
+import Moya
+import Moya_ObjectMapper
 
 final class MainViewModel: MainViewModelProtocol {
   let destinationTitle: Observable<String>
@@ -40,7 +42,36 @@ final class MainViewModel: MainViewModelProtocol {
       ["sort.sortingby".localized, $0.title].joined(separator: " ")
     }
     
-    items = Observable.just([TravelCellViewModel(), TravelCellViewModel(), TravelCellViewModel()])
+    let provider = RxMoyaProvider<GoEuropeEndpoints>.defaultProvider()
+    let selectedTab = selectedTabIndex
+      .asObservable()
+      .map { VehicleTab(rawValue: $0) }
+      .filterNil()
+    
+    let selectedDirections = selectedTab.flatMapLatest {
+      return provider.request(.getDirections($0.networkEndpoint))
+        .mapArray(DirectionModel.self)
+        .asObservable()
+    }
+    
+    items = Observable.combineLatest(
+      selectedDirections,
+      sortType) {
+        (directions, sortType) -> [TravelCellViewModelProtocol] in
+        return directions
+          .sorted {
+            switch sortType {
+            case .arrivalTime:
+              return isOrderedBefore(t1: $0.arrivalTime, t2: $1.arrivalTime)
+            case .departureTime:
+              return isOrderedBefore(t1: $0.departureTime, t2: $1.departureTime)
+            case .duration:
+              return isOrderedBefore(t1: $0.distanceTime, t2: $1.distanceTime)
+            }
+          }
+          .map(TravelCellViewModel.init)
+      }
+      .catchErrorJustReturn([])
     
     changeSort
       .flatMap { [unowned self] in
@@ -84,14 +115,71 @@ fileprivate enum SortType: Int {
   }
 }
 
-fileprivate enum Tabs: Int {
+fileprivate enum VehicleTab: Int {
   case train, bus, flight
+  
+  var networkEndpoint: GoEuropeEndpoints.Vehicle {
+    switch self {
+    case .train: return .train
+    case .bus: return .bus
+    case .flight: return .flight
+    }
+  }
 }
 
 fileprivate struct TravelCellViewModel: TravelCellViewModelProtocol {
-  var image: Observable<UIImage?> = Observable.just(#imageLiteral(resourceName: "iconDummyCompanyLogo"))
+  var image: Observable<URL?> = Observable.just(nil)
   var price: Observable<String?> = Observable.just("$19.00")
   var travelTimeRange: Observable<String?> = Observable.just("17:00 - 23:50")
   var travelTimeDuration: Observable<String?> = Observable.just("8:15h")
   var connectionType: Observable<String?> = Observable.just("Direct")
+  
+  init(model: DirectionModel) {
+    let omodel = Observable.just(model)
+    price = omodel.map { $0.priceInEuros.displayEuro }
+    travelTimeRange = Observable.combineLatest([
+      omodel.map { $0.departureTime?.displayTime },
+      omodel.map { $0.arrivalTime?.displayTime }])
+      .map { $0.filter { $0 != nil }.map { $0! } }
+      .map { $0.joined(separator: " - ") }
+    travelTimeDuration = omodel.map { $0.distanceTime?.displayDuration }
+    connectionType = omodel.map {
+      return $0.numberOfStops == 0
+        ? "direction.connectiontype.direct".localized
+        : String(format: "direction.connectiontype.xstops".localized,
+                 $0.numberOfStops)
+    }
+    image = omodel.map { $0.providerLogoUrl(for: 63) }
+  }
+}
+
+fileprivate func isOrderedBefore(t1: Date?, t2: Date?) -> Bool {
+  guard let t1 = t1 else { return false }
+  guard let t2 = t2 else { return true }
+  return t1.timeIntervalSince1970 < t2.timeIntervalSince1970
+}
+
+fileprivate extension Double {
+  var displayEuro: String? {
+    let formatter = NumberFormatter()
+    formatter.numberStyle = .currency
+    formatter.locale = Locale(identifier:"de_DE")
+    return formatter.string(from: NSNumber(value: self))
+  }
+}
+
+fileprivate extension Date {
+  var displayTime: String {
+    let formatter = DateFormatter()
+    formatter.dateStyle = .none
+    formatter.timeStyle = .short
+    formatter.timeZone = TimeZone(secondsFromGMT: 0)
+    return formatter.string(from: self)
+  }
+  var displayDuration: String {
+    let formatter = DateFormatter()
+    formatter.dateFormat = "HH:mm"
+    formatter.timeZone = TimeZone(secondsFromGMT: 0)
+    return formatter.string(from: self)
+  }
 }

@@ -20,6 +20,9 @@ target 'goeurotest' do
   pod 'RxOptional', '~> 3.2.0' # Reactive kit extension with optionals
   pod 'RxRealm', '~> 0.6.0' # Reactive Realm extension
 
+  # UI
+  pod 'AlamofireImage', '~> 3.3.0' # URL Image load
+
   post_install do |installer|
     installer.pods_project.targets.each do |target|
       target.build_configurations.each do |configuration|

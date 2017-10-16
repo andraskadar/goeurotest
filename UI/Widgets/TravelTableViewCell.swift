@@ -9,9 +9,10 @@
 import UIKit
 import RxSwift
 import RxCocoa
+import AlamofireImage
 
 protocol TravelCellViewModelProtocol {
-  var image: Observable<UIImage?> { get }
+  var image: Observable<URL?> { get }
   var price: Observable<String?> { get }
   var travelTimeRange: Observable<String?> { get }
   var connectionType: Observable<String?> { get }
@@ -29,7 +30,10 @@ final class TravelTableViewCell: UITableViewCell {
   
   func updateUI(with model: TravelCellViewModelProtocol) {
     model.image.asDriver(onErrorJustReturn: nil)
-      .drive(logoImageView.rx.image)
+      .drive(onNext: { [weak self] url in
+        guard let url = url else { self?.logoImageView.image = nil; return }
+        self?.logoImageView.af_setImage(withURL: url)
+      })
       .addDisposableTo(disposeBag)
     
     model.price.asDriver(onErrorJustReturn: nil)
