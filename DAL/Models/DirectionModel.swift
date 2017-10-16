@@ -7,9 +7,11 @@
 //
 
 import Foundation
+import Realm
+import RealmSwift
 import ObjectMapper
 
-final class DirectionModel: NSObject, ImmutableMappable {
+final class DirectionModel: Object, ImmutableMappable {
   @objc dynamic var id: Int = 0
   @objc dynamic var providerLogoUrl: String?
   @objc dynamic var priceInEuros: Double = 0
@@ -17,8 +19,11 @@ final class DirectionModel: NSObject, ImmutableMappable {
   @objc dynamic var arrivalTime: Date?
   @objc dynamic var distanceTime: Date?
   @objc dynamic var numberOfStops: Int = 0
+  @objc dynamic var vehicleTypeRaw: Int = 0
   
   init(map: Map) throws {
+    super.init()
+    
     id = try map.value("id")
     providerLogoUrl = try? map.value("provider_logo")
     
@@ -57,6 +62,19 @@ final class DirectionModel: NSObject, ImmutableMappable {
       let url = URL(string: urlString) else { return nil }
     return url
     
+  }
+  
+  // MARK: Required realm initializers
+  required init() {
+    super.init()
+  }
+  
+  required init(value: Any, schema: RLMSchema) {
+    super.init(value: value, schema: schema)
+  }
+  
+  required init(realm: RLMRealm, schema: RLMObjectSchema) {
+    super.init(realm: realm, schema: schema)
   }
 }
 

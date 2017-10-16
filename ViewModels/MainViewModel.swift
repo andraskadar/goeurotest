@@ -11,6 +11,7 @@ import RxSwift
 import RxOptional
 import Moya
 import Moya_ObjectMapper
+import RealmSwift
 
 final class MainViewModel: MainViewModelProtocol {
   let destinationTitle: Observable<String>
@@ -48,10 +49,56 @@ final class MainViewModel: MainViewModelProtocol {
       .map { VehicleTab(rawValue: $0) }
       .filterNil()
     
-    let selectedDirections = selectedTab.flatMapLatest {
-      return provider.request(.getDirections($0.networkEndpoint))
+    func saveDirections(directions: [DirectionModel], tab: VehicleTab) {
+      // Store the new directions
+      do {
+        let realm = try Realm()
+        
+        // Delete old ones
+        let oldObjects = realm.objects(DirectionModel.self)
+          .filter("vehicleTypeRaw = %d", tab.rawValue)
+        
+        try realm.write {
+          realm.delete(oldObjects)
+        }
+        
+        try realm.write {
+          realm.add(directions)
+        }
+      } catch {}
+    }
+    
+    func loadSavedDirections(for tab: VehicleTab) -> [DirectionModel] {
+      do {
+        let realm = try Realm()
+        
+        // Delete old ones
+        return Array(
+          realm.objects(DirectionModel.self)
+            .filter("vehicleTypeRaw = %d", tab.rawValue)
+        )
+      } catch {
+        // If still failing, return empty list
+        return []
+      }
+    }
+    
+    let selectedDirections = selectedTab.flatMapLatest { vehicleTab in
+      return provider.request(.getDirections(vehicleTab.networkEndpoint))
         .mapArray(DirectionModel.self)
         .asObservable()
+        .do(onNext: { directions in
+          // Set the vehicle type (for later queries)
+          directions.forEach {
+            $0.vehicleTypeRaw = vehicleTab.rawValue
+          }
+          
+          saveDirections(directions: directions, tab: vehicleTab)
+        })
+        .catchError { (_) -> Observable<[DirectionModel]> in
+          // On error return db objects
+          return Observable.just(loadSavedDirections(for: vehicleTab))
+        }
     }
     
     items = Observable.combineLatest(
