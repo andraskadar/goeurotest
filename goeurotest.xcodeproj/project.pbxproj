@@ -88,7 +88,6 @@
 				01FC08F31F952CFC006F3690 /* Localizable.strings */,
 				01C3A99A1F951B41007C1DBC /* DAL */,
 				01C3A9951F951B40007C1DBC /* Networking */,
-				01C3A9991F951B40007C1DBC /* Services */,
 				01C3A9971F951B40007C1DBC /* UI */,
 				01FC08FD1F95345E006F3690 /* Utils */,
 				01C3A99C1F951B41007C1DBC /* ViewModels */,
@@ -99,18 +98,10 @@
 		01C3A9951F951B40007C1DBC /* Networking */ = {
 			isa = PBXGroup;
 			children = (
-				01C3A9961F951B40007C1DBC /* Models */,
 				01C3B65C1F953A2F00576D2D /* GoEuroEndpoints.swift */,
 			);
 			path = Networking;
 			sourceTree = SOURCE_ROOT;
-		};
-		01C3A9961F951B40007C1DBC /* Models */ = {
-			isa = PBXGroup;
-			children = (
-			);
-			path = Models;
-			sourceTree = "<group>";
 		};
 		01C3A9971F951B40007C1DBC /* UI */ = {
 			isa = PBXGroup;
@@ -131,13 +122,6 @@
 			);
 			path = ViewControllers;
 			sourceTree = "<group>";
-		};
-		01C3A9991F951B40007C1DBC /* Services */ = {
-			isa = PBXGroup;
-			children = (
-			);
-			path = Services;
-			sourceTree = SOURCE_ROOT;
 		};
 		01C3A99A1F951B41007C1DBC /* DAL */ = {
 			isa = PBXGroup;
@@ -517,6 +501,7 @@
 				CODE_SIGN_STYLE = Automatic;
 				DEVELOPMENT_TEAM = 45WDCQN3U5;
 				INFOPLIST_FILE = goeurotest/Info.plist;
+				IPHONEOS_DEPLOYMENT_TARGET = 9.0;
 				LD_RUNPATH_SEARCH_PATHS = "$(inherited) @executable_path/Frameworks";
 				PRODUCT_BUNDLE_IDENTIFIER = com.andraskadar.goeurotest;
 				PRODUCT_NAME = "$(TARGET_NAME)";
@@ -533,6 +518,7 @@
 				CODE_SIGN_STYLE = Automatic;
 				DEVELOPMENT_TEAM = 45WDCQN3U5;
 				INFOPLIST_FILE = goeurotest/Info.plist;
+				IPHONEOS_DEPLOYMENT_TARGET = 9.0;
 				LD_RUNPATH_SEARCH_PATHS = "$(inherited) @executable_path/Frameworks";
 				PRODUCT_BUNDLE_IDENTIFIER = com.andraskadar.goeurotest;
 				PRODUCT_NAME = "$(TARGET_NAME)";

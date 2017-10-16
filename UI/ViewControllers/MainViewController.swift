@@ -64,6 +64,14 @@ final class MainViewController: UIViewController, DisposableProtocol, AlertProto
     viewAppeared = true
   }
   
+  override func viewDidLayoutSubviews() {
+    super.viewDidLayoutSubviews()
+    
+    if let selectedButton = tabButtons.filter({ $0.isSelected }).first {
+      tabUnderlineViewCenterConstraint.constant = selectedButton.center.x
+    }
+  }
+  
   private func setupUI() {
     // Create 2 lined navigation title label
     do {
